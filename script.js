@@ -1,3 +1,22 @@
+// ===== Cookie Banner =====
+const cookieBanner = document.getElementById('cookieBanner');
+if (cookieBanner) {
+  const consent = localStorage.getItem('cookie_consent');
+  if (!consent) {
+    setTimeout(() => cookieBanner.classList.add('visible'), 800);
+  }
+
+  document.getElementById('cookieAccept').addEventListener('click', () => {
+    localStorage.setItem('cookie_consent', 'accepted');
+    cookieBanner.classList.remove('visible');
+  });
+
+  document.getElementById('cookieReject').addEventListener('click', () => {
+    localStorage.setItem('cookie_consent', 'rejected');
+    cookieBanner.classList.remove('visible');
+  });
+}
+
 // ===== Navigation =====
 const navbar = document.getElementById('navbar');
 const navToggle = document.getElementById('navToggle');

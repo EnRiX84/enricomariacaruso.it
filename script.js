@@ -1,0 +1,144 @@
+// ===== Navigation =====
+const navbar = document.getElementById('navbar');
+const navToggle = document.getElementById('navToggle');
+const navLinks = document.getElementById('navLinks');
+const navItems = navLinks.querySelectorAll('a');
+
+// Scroll effect
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Mobile menu toggle
+navToggle.addEventListener('click', () => {
+  navToggle.classList.toggle('active');
+  navLinks.classList.toggle('open');
+  document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
+});
+
+// Close mobile menu on link click
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    navToggle.classList.remove('active');
+    navLinks.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+});
+
+// Active link highlighting
+const sections = document.querySelectorAll('section[id]');
+
+function updateActiveLink() {
+  const scrollY = window.scrollY + 120;
+  sections.forEach(section => {
+    const top = section.offsetTop;
+    const height = section.offsetHeight;
+    const id = section.getAttribute('id');
+    const link = navLinks.querySelector(`a[href="#${id}"]`);
+    if (link) {
+      link.classList.toggle('active', scrollY >= top && scrollY < top + height);
+    }
+  });
+}
+
+window.addEventListener('scroll', updateActiveLink);
+
+// ===== Scroll Animations =====
+const fadeElements = document.querySelectorAll('.fade-in');
+
+const fadeObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      fadeObserver.unobserve(entry.target);
+    }
+  });
+}, {
+  threshold: 0.1,
+  rootMargin: '0px 0px -40px 0px'
+});
+
+fadeElements.forEach(el => fadeObserver.observe(el));
+
+// ===== Counter Animation =====
+const statNumbers = document.querySelectorAll('.stat-number[data-count]');
+
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.getAttribute('data-count'));
+      animateCounter(el, target);
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+
+statNumbers.forEach(el => counterObserver.observe(el));
+
+function animateCounter(el, target) {
+  const duration = 1500;
+  const start = performance.now();
+
+  function update(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(target * eased);
+    if (progress < 1) requestAnimationFrame(update);
+  }
+
+  requestAnimationFrame(update);
+}
+
+// ===== Back to Top =====
+const backToTop = document.getElementById('backToTop');
+
+window.addEventListener('scroll', () => {
+  backToTop.classList.toggle('visible', window.scrollY > 500);
+});
+
+backToTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ===== Contact Form =====
+const contactForm = document.getElementById('contactForm');
+const formStatus = document.getElementById('formStatus');
+const submitBtn = document.getElementById('submitBtn');
+
+contactForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio in corso...';
+  formStatus.textContent = '';
+  formStatus.className = 'form-status';
+
+  const formData = new FormData(contactForm);
+  const data = Object.fromEntries(formData);
+
+  try {
+    const response = await fetch('https://formsubmit.co/ajax/carusoenricom@gmail.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      formStatus.textContent = 'Messaggio inviato con successo! Ti risponder\u00f2 al pi\u00f9 presto.';
+      formStatus.className = 'form-status success';
+      contactForm.reset();
+    } else {
+      throw new Error('Errore invio');
+    }
+  } catch {
+    formStatus.textContent = 'Si \u00e8 verificato un errore. Riprova o scrivimi direttamente a carusoenricom@gmail.com';
+    formStatus.className = 'form-status error';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Invia Messaggio';
+  }
+});
